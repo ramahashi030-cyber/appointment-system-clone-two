@@ -1,24 +1,15 @@
 {{--
-    Patient medical records â€” list + jQuery CRUD.
-
-    Port of QALINGA1/medical_records.php (read-only table) and the
-    "Records" bottom-nav item that pointed at the records.php which was
-    never built.
-
-    Server renders the initial rows; every write goes through jQuery
-    $.ajax to /records (POST), /records/{id} (PUT) and /records/{id}
-    (DELETE).
+    Patient medical records — list + jQuery CRUD.
+    Renders as a full page normally, or as bare content inside the dashboard modal.
 
     Expected variables:
-     *       $patientName string
-     *       $records       Illuminate\Support\Collection of MedicalRecord
-     *       $homisHistory  array<int, array<string, string|null>>
-     *       $homisStatus   array{available:bool,configured:bool,message:string}
-
-     *       $canEdit       bool — controls whether the write form is shown
-
+      $patientName   string
+      $records       Illuminate\Support\Collection of MedicalRecord
+      $homisHistory  array<int, array<string, string|null>>
+      $homisStatus   array{available:bool,configured:bool,message:string}
+      $canEdit       bool — controls whether the write form is shown
 --}}
-@extends('layouts.app')
+@extends(request()->ajax() ? 'layouts.modal' : 'layouts.app')
 
 @section('title', 'Medical Records')
 
@@ -73,15 +64,23 @@
 @endsection
 
 @section('content')
+    @php $inModal = request()->ajax(); @endphp
+
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-            <h1 class="page-title h3 mb-0">
-                <i class="bi bi-folder2-open me-2"></i>Medical Records
-            </h1>
-            <p class="page-subtitle mb-0">
-                {{ $patientName !== '' ? $patientName.' â€” ' : '' }}your laboratory results, prescriptions and other records
+        @unless ($inModal)
+            <div>
+                <h1 class="page-title h3 mb-0">
+                    <i class="bi bi-folder2-open me-2"></i>Medical Records
+                </h1>
+                <p class="page-subtitle mb-0">
+                    {{ $patientName !== '' ? $patientName.' — ' : '' }}your laboratory results, prescriptions and other records
+                </p>
+            </div>
+        @else
+            <p class="text-muted mb-0">
+                {{ $patientName !== '' ? $patientName.' — ' : '' }}your laboratory results, prescriptions and other records
             </p>
-        </div>
+        @endunless
 
         @if ($canEdit)
             <button type="button"
@@ -183,7 +182,7 @@
                                     </div>
                                 </td>
                                 <td data-label="Description">
-                                    {{ \Illuminate\Support\Str::limit($record->description ?? 'â€”', 80) }}
+                                    {{ \Illuminate\Support\Str::limit($record->description ?? '—', 80) }}
                                 </td>
                                 <td data-label="File">
                                     @if ($fileUrl)
@@ -192,10 +191,10 @@
                                             <i class="bi bi-eye me-1"></i>View
                                         </a>
                                     @else
-                                        <span class="text-muted">â€”</span>
+                                        <span class="text-muted">—</span>
                                     @endif
                                 </td>
-                                <td data-label="Added">{{ $record->created_at?->format('M d, Y h:i A') ?? 'â€”' }}</td>
+                                <td data-label="Added">{{ $record->created_at?->format('M d, Y h:i A') ?? '—' }}</td>
                                 <td data-label="Actions" class="text-end">
                                     <button type="button"
                                             class="btn btn-sm btn-outline-primary btn-pill me-1"
@@ -227,7 +226,7 @@
         </div>
     </div>
 
-    {{-- ADD / EDIT MODAL --}}
+    {{-- ADD / EDIT MODAL (moved to <body> by the dashboard loader when shown inside the modal) --}}
     <div class="modal fade" id="recordModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -329,9 +328,8 @@
     </div>
 @endsection
 
+{{-- Only used on the full page. Inside the dashboard modal these load from patient-dashboard-modals. --}}
 @push('scripts')
-    {{-- The CRUD lives in public/js/records.js; the store URL is passed in
-         through the form's data-store-url attribute. --}}
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="{{ asset('js/records.js') }}"></script>
 @endpush

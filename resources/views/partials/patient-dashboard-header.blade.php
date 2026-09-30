@@ -61,18 +61,22 @@
                             <span>{{ $dashboardPatientName }}</span>
                             <small>{{ $patient->hospital_number ?: 'Patient account' }}</small>
                         </div>
-                        <button type="button" class="dropdown-item" data-open-modal="recordsModal">
+                        <a href="{{ route('records.index') }}" class="dropdown-item"
+                           data-patient-modal data-title="Medical Records">
                             <i class="bi bi-folder2-open" aria-hidden="true"></i> Medical Records
-                        </button>
-                        <button type="button" class="dropdown-item" data-open-modal="prescriptionsModal">
+                        </a>
+                        <a href="{{ route('patient.prescriptions') }}" class="dropdown-item"
+                           data-patient-modal data-title="Prescriptions">
                             <i class="bi bi-capsule-pill" aria-hidden="true"></i> Prescriptions
-                        </button>
-                        <button type="button" class="dropdown-item" data-open-modal="proceduresModal">
+                        </a>
+                        <a href="{{ route('patient.procedures') }}" class="dropdown-item"
+                           data-patient-modal data-title="Procedures">
                             <i class="bi bi-activity" aria-hidden="true"></i> Procedures
-                        </button>
-                        <button type="button" class="dropdown-item" data-open-modal="profileModal">
+                        </a>
+                        <a href="{{ route('patient.profile') }}" class="dropdown-item"
+                           data-patient-modal data-title="My Profile">
                             <i class="bi bi-person-circle" aria-hidden="true"></i> Profile
-                        </button>
+                        </a>
                     </div>
                 </div>
 

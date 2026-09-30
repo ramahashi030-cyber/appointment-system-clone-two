@@ -291,6 +291,7 @@
     </div>
 </div>
 
+{{-- Records chooser: each option opens the shared page modal (#patientPageModal) at the bottom of this file. --}}
 <div class="modal fade dashboard-modal" id="recordsModal" tabindex="-1" aria-labelledby="recordsModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content dashboard-modal-content">
@@ -309,25 +310,29 @@
 
             <div class="modal-body dashboard-modal-body">
                 <div class="modal-record-grid">
-                    <a href="{{ route('records.index') }}" class="modal-record-option">
+                    <a href="{{ route('records.index') }}" class="modal-record-option"
+                       data-patient-modal data-title="Medical Records">
                         <span><i class="bi bi-folder2-open" aria-hidden="true"></i></span>
                         <strong>Medical Records</strong>
                         <small>View your medical record entries</small>
                         <i class="bi bi-chevron-right" aria-hidden="true"></i>
                     </a>
-                    <a href="{{ route('patient.prescriptions') }}" class="modal-record-option">
+                    <a href="{{ route('patient.prescriptions') }}" class="modal-record-option"
+                       data-patient-modal data-title="Prescriptions">
                         <span class="purple"><i class="bi bi-capsule-pill" aria-hidden="true"></i></span>
                         <strong>Prescriptions</strong>
                         <small>Review prescribed medicines</small>
                         <i class="bi bi-chevron-right" aria-hidden="true"></i>
                     </a>
-                    <a href="{{ route('patient.procedures') }}" class="modal-record-option">
+                    <a href="{{ route('patient.procedures') }}" class="modal-record-option"
+                       data-patient-modal data-title="Procedures">
                         <span class="green"><i class="bi bi-activity" aria-hidden="true"></i></span>
                         <strong>Procedures</strong>
                         <small>See your procedure history</small>
                         <i class="bi bi-chevron-right" aria-hidden="true"></i>
                     </a>
-                    <a href="{{ route('patient.profile') }}" class="modal-record-option">
+                    <a href="{{ route('patient.profile') }}" class="modal-record-option"
+                       data-patient-modal data-title="My Profile">
                         <span class="orange"><i class="bi bi-person-circle" aria-hidden="true"></i></span>
                         <strong>Profile</strong>
                         <small>Manage your personal details</small>
@@ -457,41 +462,7 @@
     </div>
 </div>
 
-{{-- Medical Records Modal --}}
-<div class="modal fade dashboard-modal" id="recordsModal" tabindex="-1" aria-labelledby="recordsModalTitle" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content dashboard-modal-content">
-            <header class="dashboard-modal-header">
-                <div class="dashboard-modal-title-group">
-                    <span class="dashboard-modal-title-icon navy" aria-hidden="true"><i class="bi bi-folder2-open"></i></span>
-                    <span>
-                        <h2 id="recordsModalTitle">Medical Records</h2>
-                        <small>Your medical record entries</small>
-                    </span>
-                </div>
-                <button type="button" class="dashboard-modal-close" data-bs-dismiss="modal" aria-label="Close medical records modal">
-                    <i class="bi bi-x-lg" aria-hidden="true"></i>
-                </button>
-            </header>
-            <div class="modal-body dashboard-modal-body">
-                <div class="modal-data-loading" data-records-loading>
-                    <span class="spinner-border spinner-border-sm"></span> Loading records...
-                </div>
-                <div class="modal-data-list" data-records-list hidden></div>
-                <div class="modal-empty-state" data-records-empty hidden>
-                    <i class="bi bi-folder2-open" aria-hidden="true"></i>
-                    <strong>No medical records found</strong>
-                    <span>Your medical records will appear here.</span>
-                </div>
-            </div>
-            <footer class="dashboard-modal-footer">
-                <button type="button" class="dashboard-modal-button secondary" data-bs-dismiss="modal">Close</button>
-            </footer>
-        </div>
-    </div>
-</div>
-
-{{-- Prescriptions Modal --}}
+{{-- Prescriptions Modal (legacy placeholder; the header/chooser now use #patientPageModal) --}}
 <div class="modal fade dashboard-modal" id="prescriptionsModal" tabindex="-1" aria-labelledby="prescriptionsModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content dashboard-modal-content">
@@ -525,7 +496,7 @@
     </div>
 </div>
 
-{{-- Procedures Modal --}}
+{{-- Procedures Modal (legacy placeholder; the header/chooser now use #patientPageModal) --}}
 <div class="modal fade dashboard-modal" id="proceduresModal" tabindex="-1" aria-labelledby="proceduresModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content dashboard-modal-content">
@@ -823,6 +794,7 @@
     </div>
 </div>
 
+
 <div class="modal fade dashboard-modal dashboard-alert-modal" id="cancelledAppointmentModal" tabindex="-1" aria-labelledby="cancelledAppointmentModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content dashboard-modal-content">
@@ -853,3 +825,114 @@
         </div>
     </div>
 </div>
+
+{{-- ===================== Shared page modal (Medical Records / Prescriptions / Procedures / Profile) ===================== --}}
+<div class="modal fade" id="patientPageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" data-page-modal-title></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" data-page-modal-body></div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{{ asset('js/records.js') }}"></script>
+    <script>
+        (() => {
+            const modalEl = document.getElementById('patientPageModal');
+            if (!modalEl) return;
+
+            const body = modalEl.querySelector('[data-page-modal-body]');
+            const title = modalEl.querySelector('[data-page-modal-title]');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+            const spinner = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
+            let currentUrl = null;
+
+            const load = async (url, flash = '') => {
+                currentUrl = url;
+                body.innerHTML = spinner;
+                document.querySelectorAll('[data-hoisted]').forEach((el) => el.remove());
+
+                try {
+                    const res = await fetch(url, { headers: { ...headers, Accept: 'text/html' } });
+                    if (!res.ok) throw new Error(res.status);
+                    body.innerHTML = flash + await res.text();
+
+                    // Nested modals (records add/edit/delete) must live on <body> to stack properly.
+                    body.querySelectorAll('.modal').forEach((m) => {
+                        m.dataset.hoisted = '1';
+                        document.body.appendChild(m);
+                    });
+                } catch (e) {
+                    body.innerHTML = '<div class="alert alert-danger">Could not load this section. Please try again.</div>';
+                }
+            };
+
+            document.addEventListener('click', (e) => {
+                const trigger = e.target.closest('[data-patient-modal]');
+                if (!trigger) return;
+                e.preventDefault();
+                title.textContent = trigger.dataset.title || '';
+                // Close any other open modal first (e.g. the "Health Records" chooser).
+                document.querySelectorAll('.modal.show').forEach((m) => {
+                    if (m !== modalEl) bootstrap.Modal.getInstance(m)?.hide();
+                });
+                modal.show();
+                load(trigger.getAttribute('href') || trigger.dataset.url);
+            });
+
+            // Clean up hoisted modals when the main modal closes.
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                document.querySelectorAll('[data-hoisted]').forEach((el) => el.remove());
+                body.innerHTML = '';
+            });
+
+            // Save the profile form inside the modal.
+            body.addEventListener('submit', async (e) => {
+                const form = e.target.closest('form[data-modal-form]');
+                if (!form) return;
+                e.preventDefault();
+
+                const btn = form.querySelector('[type=submit]');
+                btn.disabled = true;
+
+                let res;
+                try {
+                    res = await fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form), // includes _token and _method=PUT
+                        headers: { ...headers, Accept: 'application/json' },
+                    });
+                } catch (err) {
+                    btn.disabled = false;
+                    body.insertAdjacentHTML('afterbegin', '<div class="alert alert-danger">Network error. Please try again.</div>');
+                    return;
+                }
+
+                if (res.status === 422) {
+                    const { errors = {} } = await res.json();
+                    form.querySelectorAll('.is-invalid').forEach((i) => i.classList.remove('is-invalid'));
+                    form.querySelectorAll('.js-err').forEach((i) => i.remove());
+                    Object.entries(errors).forEach(([field, msgs]) => {
+                        const input = form.querySelector(`[name="${field}"]`);
+                        if (!input) return;
+                        input.classList.add('is-invalid');
+                        input.insertAdjacentHTML('afterend', `<div class="invalid-feedback d-block js-err">${msgs[0]}</div>`);
+                    });
+                    btn.disabled = false;
+                } else if (res.ok) {
+                    await load(currentUrl, '<div class="alert alert-success">Profile updated.</div>');
+                } else {
+                    btn.disabled = false;
+                    body.insertAdjacentHTML('afterbegin', '<div class="alert alert-danger">Could not save. Please try again.</div>');
+                }
+            });
+        })();
+    </script>
+@endpush

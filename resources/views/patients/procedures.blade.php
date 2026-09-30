@@ -1,7 +1,8 @@
 {{--
     Patient procedures from the HOMIS procedure-order tables.
+    Renders as a full page normally, or as bare content inside the dashboard modal.
 --}}
-@extends('layouts.app')
+@extends(request()->ajax() ? 'layouts.modal' : 'layouts.app')
 
 @section('title', 'My Procedures')
 
@@ -13,12 +14,14 @@
         $hasHospitalNumber = $hasHospitalNumber ?? false;
     @endphp
 
-    <div class="mb-4">
-        <h1 class="page-title h3 mb-0">
-            <i class="bi bi-activity me-2"></i>My Procedures
-        </h1>
-        <p class="page-subtitle mb-0">Procedures performed for you</p>
-    </div>
+    @unless (request()->ajax())
+        <div class="mb-4">
+            <h1 class="page-title h3 mb-0">
+                <i class="bi bi-activity me-2"></i>My Procedures
+            </h1>
+            <p class="page-subtitle mb-0">Procedures performed for you</p>
+        </div>
+    @endunless
 
     @if (! $hasHospitalNumber)
         <div class="alert alert-info border-0 shadow-sm" role="status">

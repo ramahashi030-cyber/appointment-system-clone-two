@@ -1,12 +1,12 @@
 {{--
-    Patient: profile — view and edit the signed-in patient's own details
-    (port of QALINGA1/profile.php's save_profile branch).
+    Patient: profile — view and edit the signed-in patient's own details.
+    Renders as a full page normally, or as bare content inside the dashboard modal.
 
     Expected variables:
       $patientName  string
       $patient      \App\Models\Patient
 --}}
-@extends('layouts.app')
+@extends(request()->ajax() ? 'layouts.modal' : 'layouts.app')
 
 @section('title', 'My Profile')
 
@@ -29,7 +29,7 @@
         width: 96px;
         height: 96px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--telemed-primary), var(--telemed-dark));
+        background: linear-gradient(135deg, var(--telemed-primary, #0d6efd), var(--telemed-dark, #0a58ca));
         color: #fff;
         font-size: 2.2rem;
         display: flex;
@@ -39,12 +39,16 @@
 @endsection
 
 @section('content')
-    <div class="mb-4">
-        <h1 class="page-title h3 mb-0">
-            <i class="bi bi-person-circle me-2"></i>My Profile
-        </h1>
-        <p class="page-subtitle mb-0">Your personal and contact details</p>
-    </div>
+    @php $inModal = request()->ajax(); @endphp
+
+    @unless ($inModal)
+        <div class="mb-4">
+            <h1 class="page-title h3 mb-0">
+                <i class="bi bi-person-circle me-2"></i>My Profile
+            </h1>
+            <p class="page-subtitle mb-0">Your personal and contact details</p>
+        </div>
+    @endunless
 
     <div class="card profile-card">
         <div class="card-body p-4">
@@ -70,7 +74,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('patient.profile.update') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('patient.profile.update') }}" method="POST" enctype="multipart/form-data" data-modal-form>
                 @csrf
                 @method('PUT')
 
@@ -164,7 +168,11 @@
                     <button type="submit" class="btn btn-primary btn-pill px-4">
                         <i class="bi bi-check2 me-1"></i>Save changes
                     </button>
-                    <a href="/telemed" class="btn btn-outline-secondary btn-pill px-4">Cancel</a>
+                    @if ($inModal)
+                        <button type="button" class="btn btn-outline-secondary btn-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    @else
+                        <a href="/telemed" class="btn btn-outline-secondary btn-pill px-4">Cancel</a>
+                    @endif
                 </div>
             </form>
 
